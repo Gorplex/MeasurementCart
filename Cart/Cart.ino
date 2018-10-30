@@ -1,19 +1,27 @@
 
-#include <SoftwareSerial.h>
+#define CONTROLLER Serial1
 
-SoftwareSerial Data(0,1);
 
 void setup()
 {
-  Data.begin(9600);
+  //Controlelr comunication
+  CONTROLLER.begin(9600);
+
+  //Load Cell comunication
+  //Serial1.begin(9600);
   
-  delay(500); // wait for display to boot up
+  delay(1000); // wait
 }
 
 void loop()
 {
-  while(1){
-    Data.write("N:3.145\n");
+  for(int i=0;i<10;i++){
+    CONTROLLER.write("LC:");
+    CONTROLLER.print(i);
+    CONTROLLER.write("\n");
+    CONTROLLER.write("POS:");
+    CONTROLLER.print((float)(i)/(i+1));
+    CONTROLLER.write("\n");
+    delay(1000);
   }
 }
-
