@@ -25,10 +25,13 @@
 #define FORCE 33
 #define FORCE_LED 34
 
+//timing  in ms
+#define LCD_UPDATE_PERIOD 1000
+#define BUTTONS_PERIOD 100
 
-#define DELAY 100
 
 //LCD on pin 18
+#define LCD_BOOT_TIME 500
 #define LCD Serial1
 #define CART Serial3
 
@@ -39,7 +42,6 @@ void setup()
   LCD.flush();
   CART.begin(9600);
   CART.flush();
-
   
   //buttons
   pinMode(SAFTY, INPUT_PULLUP);
@@ -62,29 +64,23 @@ void setup()
   pinMode(FORCE_LED, OUTPUT);
   digitalWrite(FORCE_LED, LOW);
   
-  delay(500); // wait for display to boot up
-  LCD.write(CTRL1);
-  LCD.write(CLEAR);
+  //delay(500); // wait for display to boot up
 }
 
-void updateLCD(int ticks){
-  /*
-  if((ticks%(1000/DELAY))==0){
-    LCD.write(CTRL1);
-    LCD.write(CLEAR);
-  }*/
-  LCD.write(CTRL1);
-  LCD.write(LINE1);
-  LCD.write("Hello, world!  ");
-  LCD.print(ticks/(1000/DELAY));
-  LCD.write(CTRL1);
-  LCD.write(LINE2);
-  LCD.write("TEST: ");
-  LCD.print(3.145);
-  LCD.write("m/s");
-  LCD.write(CTRL1);
-  LCD.write(LINE3);
 
+#define MAX_LINE_LEN 25
+void readLine(){
+  static char line[MAX_LINE_LEN];
+  static char len = 0;
+
+  if(0 < CART.available()){
+    line[len++] = CART.read();
+  }
+  if(line[len] == '\n' || line[len] == '\4' || len >= 25){
+    line[len] = '\0';
+    len = 0;
+    return &line;
+  }
 }
 
 void readCartData(){  
@@ -103,30 +99,71 @@ void readCartData(){
   }
 }
 
-void sendButtons(){
-  if(digitalRead(SAFTY)){
-    digitalWrite(SAFTY_LED, HIGH);
+void checkPistonButtons(){
+  digitalWrite(UP_LED, HIGH);
+  digitalWrite(DWN_LED, HIGH);
+  digitalWrite(RELEASE_LED, HIGH);
+  digitalWrite(FORCE_LED, HIGH);
+  
+  //vertical piston
+  if(!digitalRead(UP) && digitalRead(DWN)){
     CART.write("R0");
-    CART.write("F0");
-  }else{
-    digitalWrite(SAFTY_LED, LOW);
+    digitalWrite(UP_LED, LOW);
+  }else if(digitalRead(UP) && !digitalRead(DWN)){
     CART.write("R1");
+    digitalWrite(DWN_LED, LOW);
+  }
+
+  //force piston
+  if(!digitalRead(RELEASE) && digitalRead(FORCE)){
+    CART.write("F0");
+    digitalWrite(RELEASE_LED, LOW);
+  }else if(digitalRead(RELEASE) && !digitalRead(FORCE)){
     CART.write("F1");
+    digitalWrite(FORCE_LED, LOW);
   }
 }
 
-void loop(){
-  static int ticks = 0;
-
-  if(ticks%10){
-    sendButtons();
+void sendButtons(){
+  static int nextUpdate=LCD_BOOT_TIME;
+   
+  if(millis() > nextUpdate ) {
+    if(digitalRead(SAFTY)){
+      digitalWrite(SAFTY_LED, HIGH);
+      digitalWrite(UP_LED, LOW);
+      digitalWrite(DWN_LED, LOW);
+      digitalWrite(RELEASE_LED, LOW);
+      digitalWrite(FORCE_LED, LOW);
+    }else{
+      digitalWrite(SAFTY_LED, LOW);
+      checkPistonButtons();
+    }
+    nextUpdate=millis()+BUTTONS_PERIOD;
   }
+}
+
+void updateLCD(){
+  static int nextUpdate=0;  
+
+  if(millis() > nextUpdate ) {
+    LCD.write(CTRL1);
+    LCD.write(CLEAR);
   
+    LCD.write(CTRL1);
+    LCD.write(LINE1);
+    LCD.write("Sensor Cart   ");
+    LCD.print(millis()/1000);
+    LCD.write(CTRL1);
+    LCD.write(LINE2);
+    LCD.write("File: test.csv");
+        
+    nextUpdate = millis() + LCD_UPDATE_PERIOD;
+  }
+}
+
+void loop(){  
+  sendButtons();
   
-  updateLCD(ticks);
+  updateLCD();
   readCartData();
-  
-  
-  delay(DELAY);
-  ticks++;
 }
