@@ -3,17 +3,26 @@
 
 #define CONTROLLER Serial1
 
+//piston pins
 #define RAISE_PISTON 9
 #define FORCE_PISTON 11
 
+//timing
+#define SENSOR_PERIOD 100
+
 //load cell
-#define LC_PERIOD 100
 #define LC_DAT 6
 #define LC_CLK 5
 #define SETTLE_TIME 500
 #define CAL_FACTOR 696.0
 #define LC_FACTOR -.022
 HX711_ADC LoadCell(LC_DAT, LC_CLK);
+
+//string pot gauge measurment
+#define GAUGE_PIN 
+#define GAUGE_FACTOR 1
+
+
 
 
 void loadCellSetup(){
@@ -22,24 +31,30 @@ void loadCellSetup(){
   LoadCell.setCalFactor(CAL_FACTOR); 
 }
 
+void pistonSetup(){
+
+  
+}
 
 void setup()
 {
-  loadCellSetup();
-  
   //Controlelr comunication
   CONTROLLER.begin(9600);
   CONTROLLER.flush();
-
+  loadCellSetup();
+  pistonSetup();
+  
   //DEBUG
   Serial.begin(9600);
 
+  //piston setup
   pinMode(RAISE_PISTON, OUTPUT);
   pinMode(FORCE_PISTON, OUTPUT);
   digitalWrite(RAISE_PISTON, LOW);
   digitalWrite(FORCE_PISTON, LOW);
 
-  
+
+
 }
 
 void sendData(){
@@ -76,18 +91,28 @@ void setPistons(){
   }
 }
 
-//runs based on load cell period
-void updateLoadCell(){
-  static int nextUpdate=0;  
+void readLC(){
   float value;
   
+  LoadCell.update();
+  value = LoadCell.getData();
+  CONTROLLER.print("LC:");
+  CONTROLLER.print(LC_FACTOR*value, 6);
+  CONTROLLER.print("kg\n");
+}
+
+void readGauge(){
+  
+}
+
+//runs based on load cell period
+void readSensors(){
+  static int nextUpdate=0;  
+  
   if(millis() > nextUpdate ) {
-    LoadCell.update();
-    value = LoadCell.getData();
-    CONTROLLER.print("LC:");
-    CONTROLLER.print(LC_FACTOR*value, 6);
-    CONTROLLER.print("kg\n");
-    nextUpdate = millis() + LC_PERIOD;
+    readLC();
+    readGauge();
+    nextUpdate = millis() + SENSOR_PERIOD;
   }
 }
 
@@ -107,7 +132,7 @@ void debugSerial(){
 void loop()
 {
   setPistons();
-  updateLoadCell();
+  readSensors();
   //sendData();
   debugSerial();
 }
