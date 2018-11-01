@@ -13,9 +13,9 @@
 #define LINE4 SETCURS+84
 //end serial LCD codes
 
-//pins
-#define SAFTY 25
-#define SAFTY_LED 26
+//buttons
+#define SAFTY 24
+#define SAFTY_LED 25
 #define UP 27
 #define UP_LED 28
 #define DWN 29
@@ -28,33 +28,55 @@
 
 #define DELAY 100
 
+//LCD on pin 18
 #define LCD Serial1
 #define CART Serial3
 
 
-//SoftwareSerial LCD(3,2); // pin 2 = TX, pin 3 = RX (unused)
-//SoftwareSerial Data(0,1);
-
 void setup()
 {
-  //LCD pin 18
+  LCD.begin(9600);
+  LCD.flush();
+  CART.begin(9600);
+  CART.flush();
+
   
-  LCD.begin(9600); // set up serial port for 9600 baud
-  //
-  CART.begin(9600); // set up serial port for 9600 baud
+  //buttons
+  pinMode(SAFTY, INPUT_PULLUP);
+  pinMode(SAFTY_LED, OUTPUT);
+  digitalWrite(SAFTY_LED, LOW);
+    
+  pinMode(UP, INPUT_PULLUP);
+  pinMode(UP_LED, OUTPUT);
+  digitalWrite(UP_LED, LOW);
+  
+  pinMode(DWN, INPUT_PULLUP);
+  pinMode(DWN_LED, OUTPUT);
+  digitalWrite(DWN_LED, LOW);
+  
+  pinMode(RELEASE, INPUT_PULLUP);
+  pinMode(RELEASE_LED, OUTPUT);
+  digitalWrite(RELEASE_LED, LOW);
+  
+  pinMode(FORCE, INPUT_PULLUP);
+  pinMode(FORCE_LED, OUTPUT);
+  digitalWrite(FORCE_LED, LOW);
   
   delay(500); // wait for display to boot up
+  LCD.write(CTRL1);
+  LCD.write(CLEAR);
 }
 
 void updateLCD(int ticks){
-  //if((ticks%10)==0){
-  LCD.write(CTRL1);
-  LCD.write(CLEAR);
-  
+  /*
+  if((ticks%(1000/DELAY))==0){
+    LCD.write(CTRL1);
+    LCD.write(CLEAR);
+  }*/
   LCD.write(CTRL1);
   LCD.write(LINE1);
   LCD.write("Hello, world!  ");
-  LCD.print(ticks);
+  LCD.print(ticks/(1000/DELAY));
   LCD.write(CTRL1);
   LCD.write(LINE2);
   LCD.write("TEST: ");
@@ -70,6 +92,8 @@ void readCartData(){
   char received;
   while(0 < (avail = CART.available())){
     received = CART.read();
+    //LCD.write(CTRL1);
+    //LCD.write(LINE3);
     if(received == '\n'){
          LCD.write(CTRL1);
          LCD.write(LINE4);
@@ -80,14 +104,24 @@ void readCartData(){
 }
 
 void sendButtons(){
-
-  
+  if(digitalRead(SAFTY)){
+    digitalWrite(SAFTY_LED, HIGH);
+    CART.write("R0");
+    CART.write("F0");
+  }else{
+    digitalWrite(SAFTY_LED, LOW);
+    CART.write("R1");
+    CART.write("F1");
+  }
 }
 
 void loop(){
   static int ticks = 0;
+
+  if(ticks%10){
+    sendButtons();
+  }
   
-  sendButtons();
   
   updateLCD(ticks);
   readCartData();
