@@ -16,7 +16,7 @@
 #define LC_CLK 18
 #define LC_DAT 19
 #define SETTLE_TIME 500
-#define CAL_FACTOR -15321.0//696.0
+#define CAL_FACTOR -21982.125//696.0
 HX711_ADC LoadCell(LC_DAT, LC_CLK);
 
 //string pot gauge measurment
@@ -24,7 +24,7 @@ HX711_ADC LoadCell(LC_DAT, LC_CLK);
 #define MIN_READ 4.0
 #define MAX_READ 985.0
 #define MIN_LEN 0.0
-#define MAX_LEN 324.0 //in mm
+#define MAX_LEN 322.2625 //in mm
 #define MM_TO_THOU 39.3701
 
 
