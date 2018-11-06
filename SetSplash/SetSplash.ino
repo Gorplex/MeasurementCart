@@ -41,6 +41,8 @@ void setup()
   LCD.write(CTRL2);
   LCD.write(0x0A);//set splash
 
+  delay(2000);
+
   LCD.write(CTRL2);
   LCD.write(0x0D);  //baud to 9600
 

@@ -80,24 +80,28 @@ void setup()
 }
 
 void writeToLCD(char* line){
+  //to skip over leading D
+  line++;
+  //clear lcd line
   LCD.write(CTRL1);
   LCD.write(LINE3);
   LCD.write("                    ");
   LCD.write(CTRL1);
   LCD.write(LINE3);
-  LCD.write("LC:");
+  LCD.write("Force: ");
   while(*line != ','){
     LCD.write(*line++);
   }
   line++;
   LCD.write(" kg");
   
+  //clear lcd line
   LCD.write(CTRL1);
   LCD.write(LINE4);
   LCD.write("                    ");
   LCD.write(CTRL1);
   LCD.write(LINE4);
-  LCD.write("Gauge:");
+  LCD.write("Gauge: ");
   while(*line != '\0'){
     LCD.write(*line++);
   }

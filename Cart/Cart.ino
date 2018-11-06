@@ -16,8 +16,7 @@
 #define LC_CLK 18
 #define LC_DAT 19
 #define SETTLE_TIME 500
-#define CAL_FACTOR 696.0
-#define LC_FACTOR -.022
+#define CAL_FACTOR -15321.0//696.0
 HX711_ADC LoadCell(LC_DAT, LC_CLK);
 
 //string pot gauge measurment
@@ -90,8 +89,7 @@ void setPistons(){
 }
 
 void readLC(){
-  LoadCell.update();
-  CONTROLLER.print(LC_FACTOR*LoadCell.getData(), 6);
+  CONTROLLER.print(LoadCell.getData(), 4);
 }
 
 //takes 10 bit analog read value and converts to mm
@@ -100,7 +98,7 @@ int readTomm(int value){
 }
 
 void readGauge(){
-  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)));
+  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)),0);
 }
 
 //runs based on load cell period
@@ -132,6 +130,8 @@ void debugSerial(){
 
 void loop()
 {
+  //run as often as posible
+  LoadCell.update();
   setPistons();
   readSensors();
   //debugSerial();
