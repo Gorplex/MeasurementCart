@@ -16,19 +16,23 @@
 //buttons
 #define SAFTY 24
 #define SAFTY_LED 25
-#define UP 27
-#define UP_LED 28
-#define DWN 29
-#define DWN_LED 30
-#define RELEASE 31
-#define RELEASE_LED 32
-#define FORCE 33
-#define FORCE_LED 34
+#define UP 28
+#define UP_LED 29
+#define DWN 32
+#define DWN_LED 33
+#define RELEASE 36
+#define RELEASE_LED 37
+#define FORCE 40
+#define FORCE_LED 41
 
 //timing  in ms
+#define time_t unsigned long
 #define LCD_UPDATE_PERIOD 1000
 #define BUTTONS_PERIOD 100
 
+
+
+#define MAX_LINE_LEN 30
 
 //LCD on pin 18
 #define LCD_BOOT_TIME 500
@@ -40,8 +44,13 @@ void setup()
 {
   LCD.begin(9600);
   LCD.flush();
+  
   CART.begin(9600);
   CART.flush();
+
+  //debug
+  Serial.begin(9600);
+  Serial.flush();
   
   //buttons
   pinMode(SAFTY, INPUT_PULLUP);
@@ -64,38 +73,62 @@ void setup()
   pinMode(FORCE_LED, OUTPUT);
   digitalWrite(FORCE_LED, LOW);
   
-  //delay(500); // wait for display to boot up
+  // wait for display to boot up
+  delay(500);
+  LCD.write(CTRL1);
+  LCD.write(CLEAR);
 }
 
+void writeToLCD(char* line){
+  LCD.write(CTRL1);
+  LCD.write(LINE3);
+  LCD.write("                    ");
+  LCD.write(CTRL1);
+  LCD.write(LINE3);
+  LCD.write("LC:");
+  while(*line != ','){
+    LCD.write(*line++);
+  }
+  line++;
+  LCD.write(" kg");
+  
+  LCD.write(CTRL1);
+  LCD.write(LINE4);
+  LCD.write("                    ");
+  LCD.write(CTRL1);
+  LCD.write(LINE4);
+  LCD.write("Gauge:");
+  while(*line != '\0'){
+    LCD.write(*line++);
+  }
+  LCD.write(" Thou");
+}
 
-#define MAX_LINE_LEN 25
-void readLine(){
+int check_line(char* line, int len){
+  if(line[0] != 'D' || line[len-1] != '\0'){
+    return 0;
+  }
+  return 1;
+}
+
+void readCartData(){ 
   static char line[MAX_LINE_LEN];
   static char len = 0;
 
   if(0 < CART.available()){
     line[len++] = CART.read();
+    Serial.print(line[len-1]);
   }
-  if(line[len] == '\n' || line[len] == '\4' || len >= 25){
-    line[len] = '\0';
+  if(line[len-1] == '\n' || len >= MAX_LINE_LEN){
+    line[len-1]='\0';
+    if(check_line(line, len)){
+      Serial.print("valid -- ");
+      Serial.println(line);
+      writeToLCD(line);
+      //writeToFile(line);
+    }
+    //reset
     len = 0;
-    return &line;
-  }
-}
-
-void readCartData(){  
-  int avail;
-  char received;
-  while(0 < (avail = CART.available())){
-    received = CART.read();
-    //LCD.write(CTRL1);
-    //LCD.write(LINE3);
-    if(received == '\n'){
-         LCD.write(CTRL1);
-         LCD.write(LINE4);
-    }else{
-      LCD.write(received);
-    }  
   }
 }
 
@@ -125,7 +158,7 @@ void checkPistonButtons(){
 }
 
 void sendButtons(){
-  static int nextUpdate=LCD_BOOT_TIME;
+  static time_t nextUpdate=LCD_BOOT_TIME;
    
   if(millis() > nextUpdate ) {
     if(digitalRead(SAFTY)){
@@ -143,15 +176,13 @@ void sendButtons(){
 }
 
 void updateLCD(){
-  static int nextUpdate=0;  
+  static time_t nextUpdate=0;  
 
   if(millis() > nextUpdate ) {
-    LCD.write(CTRL1);
-    LCD.write(CLEAR);
   
     LCD.write(CTRL1);
     LCD.write(LINE1);
-    LCD.write("Sensor Cart   ");
+    LCD.write("Sensor Cart     ");
     LCD.print(millis()/1000);
     LCD.write(CTRL1);
     LCD.write(LINE2);

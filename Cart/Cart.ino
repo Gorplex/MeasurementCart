@@ -1,26 +1,31 @@
 //from https://github.com/olkal/HX711_ADC library (in arduino lib manager)
 #include <HX711_ADC.h>
 
-#define CONTROLLER Serial1
+#define CONTROLLER Serial3
 
 //piston pins
 #define RAISE_PISTON 9
 #define FORCE_PISTON 11
 
 //timing
-#define SENSOR_PERIOD 100
+#define time_t unsigned long
+#define SENSOR_PERIOD 1000
 
 //load cell
-#define LC_DAT 6
-#define LC_CLK 5
+#define LC_CLK 18
+#define LC_DAT 19
 #define SETTLE_TIME 500
 #define CAL_FACTOR 696.0
 #define LC_FACTOR -.022
 HX711_ADC LoadCell(LC_DAT, LC_CLK);
 
 //string pot gauge measurment
-#define GAUGE_PIN 
-#define GAUGE_FACTOR 1
+#define GAUGE_PIN A5
+#define MIN_READ 4.0
+#define MAX_READ 985.0
+#define MIN_LEN 0.0
+#define MAX_LEN 324.0 //in mm
+#define MM_TO_THOU 39.3701
 
 
 
@@ -32,40 +37,29 @@ void loadCellSetup(){
 }
 
 void pistonSetup(){
-
+  pinMode(RAISE_PISTON, OUTPUT);
+  pinMode(FORCE_PISTON, OUTPUT);
+  digitalWrite(RAISE_PISTON, LOW);
+  digitalWrite(FORCE_PISTON, LOW);
   
 }
+void gaugeSetup(){
+  pinMode(GAUGE_PIN, INPUT);
+}
+
 
 void setup()
 {
   //Controlelr comunication
   CONTROLLER.begin(9600);
   CONTROLLER.flush();
-  loadCellSetup();
-  pistonSetup();
   
   //DEBUG
-  Serial.begin(9600);
-
-  //piston setup
-  pinMode(RAISE_PISTON, OUTPUT);
-  pinMode(FORCE_PISTON, OUTPUT);
-  digitalWrite(RAISE_PISTON, LOW);
-  digitalWrite(FORCE_PISTON, LOW);
-
-
-
-}
-
-void sendData(){
-    for(int i=0;i<10;i++){
-    CONTROLLER.write("LC:");
-    CONTROLLER.print(i);
-    CONTROLLER.write("\n");
-    CONTROLLER.write("POS:");
-    CONTROLLER.print((float)(i)/(i+1));
-    CONTROLLER.write("\n");
-  } 
+  //Serial.begin(9600);
+  
+  loadCellSetup();
+  pistonSetup();
+  gaugeSetup();
 }
 
 //runs as often as posible
@@ -92,26 +86,29 @@ void setPistons(){
 }
 
 void readLC(){
-  float value;
-  
   LoadCell.update();
-  value = LoadCell.getData();
-  CONTROLLER.print("LC:");
-  CONTROLLER.print(LC_FACTOR*value, 6);
-  CONTROLLER.print("kg\n");
+  CONTROLLER.print(LC_FACTOR*LoadCell.getData(), 6);
+}
+
+//takes 10 bit analog read value and converts to mm
+int readTomm(int value){
+  return (int) (MAX_LEN-MIN_LEN)/(MAX_READ-MIN_READ)*(value-MIN_READ);
 }
 
 void readGauge(){
-  
+  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)));
 }
 
 //runs based on load cell period
 void readSensors(){
-  static int nextUpdate=0;  
+  static time_t nextUpdate=0;  
   
   if(millis() > nextUpdate ) {
+    CONTROLLER.print("D");
     readLC();
+    CONTROLLER.print(",");
     readGauge();
+    CONTROLLER.print("\n");
     nextUpdate = millis() + SENSOR_PERIOD;
   }
 }
@@ -133,6 +130,5 @@ void loop()
 {
   setPistons();
   readSensors();
-  //sendData();
-  debugSerial();
+  //debugSerial();
 }
