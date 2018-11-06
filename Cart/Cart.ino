@@ -4,8 +4,9 @@
 #define CONTROLLER Serial3
 
 //piston pins
-#define RAISE_PISTON 9
-#define FORCE_PISTON 11
+#define RELAY_EN A0
+#define RAISE_PISTON A1
+#define FORCE_PISTON A2
 
 //timing
 #define time_t unsigned long
@@ -37,11 +38,13 @@ void loadCellSetup(){
 }
 
 void pistonSetup(){
+  pinMode(RELAY_EN, OUTPUT);
+  digitalWrite(RELAY_EN, HIGH);
+  
   pinMode(RAISE_PISTON, OUTPUT);
   pinMode(FORCE_PISTON, OUTPUT);
   digitalWrite(RAISE_PISTON, LOW);
   digitalWrite(FORCE_PISTON, LOW);
-  
 }
 void gaugeSetup(){
   pinMode(GAUGE_PIN, INPUT);
@@ -65,6 +68,7 @@ void setup()
 //runs as often as posible
 void setPistons(){
   char input;
+  
   if(2 <= CONTROLLER.available()){
     input = CONTROLLER.read();
     if(input == 'R'){

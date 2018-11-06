@@ -16,14 +16,14 @@
 //buttons
 #define SAFTY 24
 #define SAFTY_LED 25
-#define UP 28
-#define UP_LED 29
-#define DWN 32
-#define DWN_LED 33
-#define RELEASE 36
-#define RELEASE_LED 37
-#define FORCE 40
-#define FORCE_LED 41
+#define UP 40
+#define UP_LED 41
+#define DWN 36
+#define DWN_LED 37
+#define RELEASE 28
+#define RELEASE_LED 29
+#define FORCE 32
+#define FORCE_LED 33
 
 //timing  in ms
 #define time_t unsigned long
@@ -117,13 +117,12 @@ void readCartData(){
 
   if(0 < CART.available()){
     line[len++] = CART.read();
-    Serial.print(line[len-1]);
   }
   if(line[len-1] == '\n' || len >= MAX_LINE_LEN){
     line[len-1]='\0';
     if(check_line(line, len)){
-      Serial.print("valid -- ");
-      Serial.println(line);
+      //Serial.print("valid -- ");
+      //Serial.println(line);
       writeToLCD(line);
       //writeToFile(line);
     }
@@ -133,18 +132,16 @@ void readCartData(){
 }
 
 void checkPistonButtons(){
-  digitalWrite(UP_LED, HIGH);
-  digitalWrite(DWN_LED, HIGH);
-  digitalWrite(RELEASE_LED, HIGH);
-  digitalWrite(FORCE_LED, HIGH);
-  
   //vertical piston
   if(!digitalRead(UP) && digitalRead(DWN)){
-    CART.write("R0");
     digitalWrite(UP_LED, LOW);
+    CART.write("R0");
   }else if(digitalRead(UP) && !digitalRead(DWN)){
-    CART.write("R1");
     digitalWrite(DWN_LED, LOW);
+    CART.write("R1");
+  }else{
+    digitalWrite(UP_LED, HIGH);
+    digitalWrite(DWN_LED, HIGH);
   }
 
   //force piston
@@ -154,6 +151,9 @@ void checkPistonButtons(){
   }else if(digitalRead(RELEASE) && !digitalRead(FORCE)){
     CART.write("F1");
     digitalWrite(FORCE_LED, LOW);
+  }else{
+    digitalWrite(RELEASE_LED, HIGH);
+    digitalWrite(FORCE_LED, HIGH);
   }
 }
 
@@ -162,12 +162,14 @@ void sendButtons(){
    
   if(millis() > nextUpdate ) {
     if(digitalRead(SAFTY)){
+      //safty button not pressed
       digitalWrite(SAFTY_LED, HIGH);
       digitalWrite(UP_LED, LOW);
       digitalWrite(DWN_LED, LOW);
       digitalWrite(RELEASE_LED, LOW);
       digitalWrite(FORCE_LED, LOW);
     }else{
+      //safty button pressed
       digitalWrite(SAFTY_LED, LOW);
       checkPistonButtons();
     }
