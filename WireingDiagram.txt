@@ -1,0 +1,123 @@
+@startuml
+interface "Key" as Key
+Key - Key : Power Connection
+Key . Key : Logic Connection
+
+interface "Motor Car Battery" as Battery
+note left of Battery : External to System
+
+Package "Controller on Motor Car" {
+  [Power Switch] as PS
+  note left of PS : With 5A Breaker
+  [Battery Regulator] as InputProt
+  note left of InputProt
+    Regulator with Reverse Protection
+    Input : 10-15V
+    Output : 8 - 12V
+    Expected operating ranges
+  end note
+  [Controller Arudrino Mega] as uC1
+  [Controller LCD] as LCD
+  [Safty BTN (RED)] as B1
+  [Raise BTN (GRN)] as B2
+  [Lower BTN (BLU)] as B3
+  [Release BTN (GRN)] as B4
+  [Force BTN (BLU)] as B5
+  [SD Card Reader] as SD
+  [Dial BTN] as Dial
+}
+
+Package "Measument Cart" {
+  [Measurment Cart Arudrino Mega] as uC2
+  [Load Cell Amplifier] as LCA
+  [Load Cell] as LC
+  [Gauge Measurement] as Gauge
+  frame "Solenoid Power" {
+    [Boost Converter] as Boost
+    note left of Boost : 12V to 24V converter
+    [Solenoid Relays] as Relay
+    [Lift Solenoid] as Lift
+    [Force Solenoid] as Force
+  }
+}
+
+Battery -- PS : Battery Positive (~12v)
+Battery -- InputProt : Battery Negitive (0v)
+PS -- InputProt : Battery Positive (~12v)
+
+uC2 .. uC1 : 14-15(TX-RX)
+uC2 .. uC1 : 15-14(RX-TX)
+
+
+InputProt ---- uC1 : (12v)
+InputProt ---- uC1 : (GND)
+
+Dial --- uC1 : (GND)
+Dial --- uC1 : (5V)
+
+SD --- uC1 : (GND)
+SD --- uC1 : (5V)
+
+LCD -- uC1 : (GND)
+LCD -- uC1 : (5v)
+LCD .. uC1 : 18(TX)
+
+B1 -- uC1 : (GND)
+B1 -- uC1 : (GND)
+B1 .. uC1 : 24(BTN)
+B1 .. uC1 : 25(LED
+
+B2 -- uC1 : (GND)
+B2 -- uC1 : (GND)
+B2 .. uC1 : 40(BTN)
+B2 .. uC1 : 41(LED)
+
+uC1 -- B3 : (GND)
+uC1 -- B3 : (GND)
+uC1 .. B3 : 36(BTN)
+uC1 .. B3 : 37(LED)
+
+uC1 -- B4 : (GND)
+uC1 -- B4 : (GND)
+uC1 .. B4 : 28(BTN)
+uC1 .. B4 : 29(LED)
+
+uC1 -- B5 : (GND)
+uC1 -- B5 : (GND)
+uC1 .. B5 : 32(BTN)
+uC1 .. B5 : 33(LED)
+
+InputProt - uC2 : (12v)
+InputProt - uC2 : (GND)
+
+uC2 -- LCA : (GND)
+uC2 -- LCA : (5V)
+uC2 .. LCA : 18(CLK)
+uC2 .. LCA : 19(DAT)
+
+LCA .. LC : RED
+LCA .. LC : BLK
+LCA .. LC : WHT
+LCA .. LC : GRN
+LCA .. LC : YLW
+
+uC2 -- Gauge : (GND)
+uC2 -- Gauge : (5V)
+uC2 .. Gauge : A5
+
+uC2 --- Relay : A0(5V ref)
+uC2 ... Relay : A1
+uC2 ... Relay : A2
+
+InputProt -- Boost : (GND)
+InputProt -- Boost : (12V)
+
+Boost -- Relay : (GND)
+Boost -- Relay : (24V)
+
+Relay .. Lift : RED
+Relay .. Lift : BLK
+
+Relay .. Force : RED
+Relay .. Force : BLK
+@enduml
