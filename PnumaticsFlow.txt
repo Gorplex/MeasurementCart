@@ -1,0 +1,36 @@
+@startuml
+
+Motor_Car-->Car_Battery: Mounted
+Motor_Car-->User_Controller: Mounted
+Motor_Car-->Air_Supply: Mounted
+Car_Battery-->Electronics_Box: 12V
+User_Controller-->Microcontroller1: Mounted
+User_Controller-->LCD: Mounted
+User_Controller-->Keypad: Mounted
+Microcontroller1->Microcontroller2: Serial
+
+Measurement_Cart-->Air_Regulator: Mounted
+Measurement_Cart-->Electronics_Box: Mounted
+Electronics_Box-->Microcontroller2: Mounted
+Electronics_Box-->3.3V_Regulator: Mounted
+Electronics_Box-->24V_Boost_Converter: Mounted
+Microcontroller2->24V_Boost_Converter: Data
+24V_Boost_Converter->Solenoid1: 24v
+24V_Boost_Converter->Solenoid2: 24v
+3.3V_Regulator->Microcontroller2: Power
+Microcontroller2-->Sensors: Data
+Sensors-->Microcontroller2: Data
+Microcontroller2->Microcontroller1: Serial
+Air_Supply->Air_Regulator: 70-150psi
+Air_Regulator-->Air_Tank: Air
+Air_Tank-->Solenoid1: Air
+Air_Tank-->Solenoid2: Air
+Solenoid1-->Flow_Limiter1a: Air
+Solenoid1-->Flow_Limiter1b: Air
+Solenoid2-->Flow_Limiter2a: Air
+Solenoid2-->Flow_Limiter2b: Air
+
+
+Motor_Car:
+
+@enduml
