@@ -4,8 +4,8 @@
  This example shows how to read and write data to and from an SD card file
  The circuit:
  * SD card attached to SPI bus as follows:
- ** MOSI - pin 11 (50 on mega)
- ** MISO - pin 12 (51 on mega)
+ ** MOSI - pin 11 (51 on mega)
+ ** MISO - pin 12 (50 on mega)
  ** CLK - pin 13 (52 on mega)
  ** CS - pin 4 (for MKRZero SD: SDCARD_SS_PIN) (53 on mega)
 
