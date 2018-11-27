@@ -34,6 +34,7 @@ void setup() {
 }
 
 int waitForBtn(){
+  return 1;
   while(!digitalRead(KNOB_BTN));
 }
 
