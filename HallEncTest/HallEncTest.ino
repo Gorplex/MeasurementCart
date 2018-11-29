@@ -1,12 +1,12 @@
 
-#define KNOB_BTN A13
+#define KNOB_BTN 4
 
 #define KNOB_RED A9
 #define KNOB_GRN A11
 #define KNOB_BLU A10
 
-#define KNOB_ENCA 2 //A15
-#define KNOB_ENCB 3 //A14
+#define KNOB_ENCA 2
+#define KNOB_ENCB 3
 
 #define ISR_PIN KNOB_ENCA
 

@@ -1,14 +1,14 @@
 //using encoder lib found at https://github.com/PaulStoffregen/Encoder
 #include "Encoder.h"
 
-#define KNOB_BTN A13
+#define KNOB_BTN 4  //A13
 
 #define KNOB_RED A9
 #define KNOB_GRN A11
 #define KNOB_BLU A10
 
-#define KNOB_ENCA A15
-#define KNOB_ENCB A14
+#define KNOB_ENCA 2 //A15
+#define KNOB_ENCB 3 //A14
 
 Encoder myEnc(KNOB_ENCA, KNOB_ENCB);
 
@@ -34,7 +34,7 @@ void setup() {
 }
 
 int waitForBtn(){
-  return 1;
+  //return 1;
   while(!digitalRead(KNOB_BTN));
 }
 
