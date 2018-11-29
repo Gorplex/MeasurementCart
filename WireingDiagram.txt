@@ -45,32 +45,42 @@ Battery -- PS : Battery Positive (~12v)
 Battery -- InputProt : Battery Negitive (0v)
 PS -- InputProt : Battery Positive (~12v)
 
-uC2 .. uC1 : 14-15(TX-RX)
-uC2 .. uC1 : 15-14(RX-TX)
+uC2 ... uC1 : 14-15(TX-RX)
+uC2 ... uC1 : 15-14(RX-TX)
 
 
 InputProt ---- uC1 : (12v)
 InputProt ---- uC1 : (GND)
 
-Dial --- uC1 : (GND)
-Dial --- uC1 : (5V)
+Dial --- uC1 : C(GND)
+Dial --- uC1 : +
+Dial ... uC1 : A15(A)
+Dial ... uC1 : A14(B)
+Dial ... uC1 : A13(BTN)
+Dial --- uC1 : A9(R)
+Dial --- uC1 : A11(G)
+Dial --- uC1 : A10(B)
 
 SD --- uC1 : (GND)
 SD --- uC1 : (5V)
+SD ... uC1 : 53(CS)
+SD ... uC1 : 52(SCK)
+SD ... uC1 : 50(MOSI)
+SD ... uC1 : 51(MISO)
 
-LCD -- uC1 : (GND)
-LCD -- uC1 : (5v)
-LCD .. uC1 : 18(TX)
+LCD --- uC1 : (GND)
+LCD --- uC1 : (5v)
+LCD ... uC1 : 18(TX)
 
-B1 -- uC1 : (GND)
-B1 -- uC1 : (GND)
-B1 .. uC1 : 24(BTN)
-B1 .. uC1 : 25(LED
+uC1 -- B1 : (GND)
+uC1 -- B1 : (GND)
+uC1 .. B1 : 24(BTN)
+uC1 .. B1 : 25(LED
 
-B2 -- uC1 : (GND)
-B2 -- uC1 : (GND)
-B2 .. uC1 : 40(BTN)
-B2 .. uC1 : 41(LED)
+uC1 -- B2 : (GND)
+uC1 -- B2 : (GND)
+uC1 .. B2 : 40(BTN)
+uC1 .. B2 : 41(LED)
 
 uC1 -- B3 : (GND)
 uC1 -- B3 : (GND)
@@ -109,8 +119,8 @@ uC2 --- Relay : A0(5V ref)
 uC2 ... Relay : A1
 uC2 ... Relay : A2
 
-InputProt -- Boost : (GND)
-InputProt -- Boost : (12V)
+uC2 -- Boost : (GND)
+uC2 -- Boost : (12V)
 
 Boost -- Relay : (GND)
 Boost -- Relay : (24V)
