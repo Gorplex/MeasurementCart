@@ -44,7 +44,12 @@ void readEnc(){
   
 }
 
-void loop() {
+void loop(){
+  testAll();
+  
+}
+
+void testAll() {
   delay(1000);
   readEnc();
   waitForBtn();
