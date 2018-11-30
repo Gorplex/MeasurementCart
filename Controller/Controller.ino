@@ -1,5 +1,7 @@
 //#include <SoftwareSerial.h>
 
+
+
 //serial LCD codes
 #define CTRL1 0xFE
 #define CTRL2 0x7C
@@ -12,6 +14,17 @@
 #define LINE3 SETCURS+20
 #define LINE4 SETCURS+84
 //end serial LCD codes
+
+//knob encoder
+#define KNOB_BTN 4  
+#define KNOB_ENCA 2 
+#define KNOB_ENCB 3 
+
+#define KNOB_RED A9
+#define KNOB_GRN A11
+#define KNOB_BLU A10
+
+volatile int knobCount = 0;
 
 //buttons
 #define SAFTY 24
@@ -39,6 +52,29 @@
 #define LCD Serial1
 #define CART Serial3
 
+
+void setupKnob(){
+  pinMode(KNOB_BTN, INPUT);
+  
+  pinMode(KNOB_RED, OUTPUT);
+  pinMode(KNOB_GRN, OUTPUT);
+  pinMode(KNOB_BLU, OUTPUT);
+
+  digitalWrite(KNOB_RED, HIGH);
+  digitalWrite(KNOB_GRN, HIGH);
+  digitalWrite(KNOB_BLU, HIGH);
+  
+}
+
+void knobISR(){ 
+  if(!digitalRead(KNOB_ENCA)){  //to prevent double positive counts ISR triggered on B falling if A was high (causing double count)
+    if(!digitalRead(KNOB_ENCB)){
+      knobCount++;
+    }else{
+      knobCount--;
+    }
+  }
+}
 
 void setup()
 {
@@ -77,6 +113,10 @@ void setup()
   delay(500);
   LCD.write(CTRL1);
   LCD.write(CLEAR);
+
+  setupKnob();
+  //enable ISR for knob encoder
+  
 }
 
 void writeToLCD(char* line){
@@ -190,9 +230,9 @@ void updateLCD(){
     LCD.write(LINE1);
     LCD.write("Sensor Cart     ");
     LCD.print(millis()/1000);
-    LCD.write(CTRL1);
-    LCD.write(LINE2);
-    LCD.write("File: test.csv");
+    //LCD.write(CTRL1);
+    //LCD.write(LINE2);
+    //LCD.write("File: test.csv");
         
     nextUpdate = millis() + LCD_UPDATE_PERIOD;
   }

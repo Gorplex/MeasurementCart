@@ -3,6 +3,12 @@
 
 #define CONTROLLER Serial3
 
+//Hall Efect Encoder Pins
+#define ENCA 2
+#define ENCB 3
+#define ISR_PIN ENCA
+volatile long encCount = 0;
+
 //piston pins
 #define RELAY_EN A0
 #define RAISE_PISTON A1
@@ -49,6 +55,15 @@ void gaugeSetup(){
   pinMode(GAUGE_PIN, INPUT);
 }
 
+void EncISR(){ 
+  if(!digitalRead(KNOB_ENCA)){  //to prevent double positive counts ISR triggered on B falling if A was high (causing double count)
+    if(!digitalRead(KNOB_ENCB)){
+      encCount++;
+    }else{
+      encCount--;
+    }
+  }
+}
 
 void setup()
 {
@@ -62,6 +77,8 @@ void setup()
   loadCellSetup();
   pistonSetup();
   gaugeSetup();
+
+  attachInterrupt(digitalPinToInterrupt(ISR_PIN), EncISR, FALLING);
 }
 
 //runs as often as posible
@@ -98,7 +115,12 @@ int readTomm(int value){
 }
 
 void readGauge(){
-  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)),0);
+  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)), 0);
+}
+
+void readEnc(){
+  CONTROLLER.print(encCount), 0);
+  
 }
 
 //runs based on load cell period
@@ -107,8 +129,10 @@ void readSensors(){
   
   if(millis() > nextUpdate ) {
     CONTROLLER.print("D");
+    readEnc();
+    CONTROLLER.print(", ");
     readLC();
-    CONTROLLER.print(",");
+    CONTROLLER.print(", ");
     readGauge();
     CONTROLLER.print("\n");
     nextUpdate = millis() + SENSOR_PERIOD;

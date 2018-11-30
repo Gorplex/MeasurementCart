@@ -85,5 +85,5 @@ void PrintTest() {
   Serial.print("C: ");
   Serial.println(count);
   Serial.print("\n");
-  delay(100);
+  delay(200);
 }
