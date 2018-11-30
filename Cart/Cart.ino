@@ -9,6 +9,10 @@
 #define ISR_PIN ENCA
 volatile long encCount = 0;
 
+//Dist Measurment
+#define MAG_PER_ROT 4
+#define FT_PER_ROT  1.375  //circumference of wheel on track 
+
 //piston pins
 #define RELAY_EN A0
 #define RAISE_PISTON A1
@@ -119,7 +123,7 @@ void readGauge(){
 }
 
 void readEnc(){
-  CONTROLLER.print(encCount), 0);
+  CONTROLLER.print(((long)encCount)*FT_PER_ROT/MAG_PRE_ROT), 1);
   
 }
 
@@ -130,9 +134,9 @@ void readSensors(){
   if(millis() > nextUpdate ) {
     CONTROLLER.print("D");
     readEnc();
-    CONTROLLER.print(", ");
+    CONTROLLER.print(",");
     readLC();
-    CONTROLLER.print(", ");
+    CONTROLLER.print(",");
     readGauge();
     CONTROLLER.print("\n");
     nextUpdate = millis() + SENSOR_PERIOD;

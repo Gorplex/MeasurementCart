@@ -1,6 +1,4 @@
-//#include <SoftwareSerial.h>
-
-
+#include <SD.h>
 
 //serial LCD codes
 #define CTRL1 0xFE
@@ -14,6 +12,8 @@
 #define LINE3 SETCURS+20
 #define LINE4 SETCURS+84
 //end serial LCD codes
+#define LINE_LEN 20
+
 
 //knob encoder
 #define KNOB_BTN 4  
@@ -40,10 +40,8 @@ volatile int knobCount = 0;
 
 //timing  in ms
 #define time_t unsigned long
-#define LCD_UPDATE_PERIOD 1000
+#define LCD_UPDATE_PERIOD 1000  //remove
 #define BUTTONS_PERIOD 100
-
-
 
 #define MAX_LINE_LEN 30
 
@@ -51,6 +49,19 @@ volatile int knobCount = 0;
 #define LCD_BOOT_TIME 500
 #define LCD Serial1
 #define CART Serial3
+
+//sd card
+#define SD_PIN 53
+#define SD_FILENAME "Data"
+#define SD_EXT ".csv"
+#define SD_OK 0
+#define SD_FAIL_INIT 1
+#define SD_FAIL_FILE 2
+
+int SDStatus= SD_OK;
+
+//time
+#define TIME_DIG 5
 
 
 void setupKnob(){
@@ -76,19 +87,7 @@ void knobISR(){
   }
 }
 
-void setup()
-{
-  LCD.begin(9600);
-  LCD.flush();
-  
-  CART.begin(9600);
-  CART.flush();
-
-  //debug
-  Serial.begin(9600);
-  Serial.flush();
-  
-  //buttons
+void setupBtns(){
   pinMode(SAFTY, INPUT_PULLUP);
   pinMode(SAFTY_LED, OUTPUT);
   digitalWrite(SAFTY_LED, LOW);
@@ -109,23 +108,76 @@ void setup()
   pinMode(FORCE_LED, OUTPUT);
   digitalWrite(FORCE_LED, LOW);
   
+}
+
+void setupSD(){
+  if (!SD.begin(SD_PIN)) {  //defaults to pin 53
+    SDStatus = SD_FAIL_INIT;
+  }
+}
+
+void setup()
+{
+  LCD.begin(9600);
+  LCD.flush();
+  
+  CART.begin(9600);
+  CART.flush();
+
+  //debug
+  Serial.begin(9600);
+  Serial.flush();
+  
   // wait for display to boot up
   delay(500);
   LCD.write(CTRL1);
   LCD.write(CLEAR);
 
-  setupKnob();
+  setupBtns();
+  setupSD();
   //enable ISR for knob encoder
-  
+  setupKnob();
 }
 
 void writeToLCD(char* line){
   //to skip over leading D
   line++;
-  //clear lcd line
+
   LCD.write(CTRL1);
-  LCD.write(LINE3);
-  LCD.write("                    ");
+  LCD.write(CLEAR);
+
+  //File name and status
+  LCD.write(CTRL1);
+  LCD.write(LINE1);
+  LCD.write("File: ");
+  if(SDStatus == SD_OK){
+    LCD.write(SD_FILENAME SD_EXT);
+  }else if (SDStatus == SD_FAIL_INIT){
+    LCD.write("SD CARD ERR");
+  }else if(SDStatus == SD_FAIL_FILE){
+    LCD.write("FILE ERR");
+  }else{
+    LCD.write("OTHER ERR");
+  }
+  
+  //time
+  LCD.write(CTRL1);
+  LCD.write(LINE1+LINE_LEN-TIME_DIG);
+  LCD.print(millis()/1000);
+  
+
+  //Dist
+  LCD.write(CTRL1);
+  LCD.write(LINE2);
+  LCD.write("Dist: ");
+  while(*line != ','){
+    LCD.write(*line++);
+  }
+  line++;
+  LCD.write(" ft");
+  
+
+  //Force
   LCD.write(CTRL1);
   LCD.write(LINE3);
   LCD.write("Force: ");
@@ -134,11 +186,8 @@ void writeToLCD(char* line){
   }
   line++;
   LCD.write(" kg");
-  
-  //clear lcd line
-  LCD.write(CTRL1);
-  LCD.write(LINE4);
-  LCD.write("                    ");
+
+  //Gauge
   LCD.write(CTRL1);
   LCD.write(LINE4);
   LCD.write("Gauge: ");
@@ -155,7 +204,7 @@ int check_line(char* line, int len){
   return 1;
 }
 
-void readCartData(){ 
+void readCartData(){
   static char line[MAX_LINE_LEN];
   static char len = 0;
 
@@ -168,10 +217,25 @@ void readCartData(){
       //Serial.print("valid -- ");
       //Serial.println(line);
       writeToLCD(line);
-      //writeToFile(line);
+      writeToFile(line);
     }
     //reset
     len = 0;
+  }
+  
+}
+
+void writeToFile(char* line){
+  File openFile;
+  
+  //if SD card was inited 
+  if(SDStatus != SD_FAIL_INIT){
+    if(openFile = SD.open(SD_FILENAME SD_EXT, FILE_WRITE)){
+      openFile.println(line);
+      openFile.close();
+    }else{
+      SDStatus = SD_FAIL_FILE;
+    }
   }
 }
 
@@ -221,26 +285,9 @@ void sendButtons(){
   }
 }
 
-void updateLCD(){
-  static time_t nextUpdate=0;  
-
-  if(millis() > nextUpdate ) {
-  
-    LCD.write(CTRL1);
-    LCD.write(LINE1);
-    LCD.write("Sensor Cart     ");
-    LCD.print(millis()/1000);
-    //LCD.write(CTRL1);
-    //LCD.write(LINE2);
-    //LCD.write("File: test.csv");
-        
-    nextUpdate = millis() + LCD_UPDATE_PERIOD;
-  }
-}
-
 void loop(){  
   sendButtons();
   
-  updateLCD();
+  //updateLCD();
   readCartData();
 }
