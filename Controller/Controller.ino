@@ -13,7 +13,7 @@
 #define LINE4 SETCURS+84
 //end serial LCD codes
 #define LINE_LEN 20
-
+#define LCD_DELAY 1000
 
 //knob encoder
 #define KNOB_BTN 4  
@@ -129,7 +129,7 @@ void setup()
   Serial.flush();
   
   // wait for display to boot up
-  delay(500);
+  delay(LCD_DELAY);
   LCD.write(CTRL1);
   LCD.write(CLEAR);
 
@@ -143,9 +143,6 @@ void writeToLCD(char* line){
   //to skip over leading D
   line++;
 
-  LCD.write(CTRL1);
-  LCD.write(CLEAR);
-
   //File name and status
   LCD.write(CTRL1);
   LCD.write(LINE1);
@@ -153,7 +150,7 @@ void writeToLCD(char* line){
   if(SDStatus == SD_OK){
     LCD.write(SD_FILENAME SD_EXT);
   }else if (SDStatus == SD_FAIL_INIT){
-    LCD.write("SD CARD ERR");
+    LCD.write("SD ERR");
   }else if(SDStatus == SD_FAIL_FILE){
     LCD.write("FILE ERR");
   }else{
@@ -213,7 +210,9 @@ void readCartData(){
   }
   if(line[len-1] == '\n' || len >= MAX_LINE_LEN){
     line[len-1]='\0';
-    if(check_line(line, len)){
+    if(check_line(line, len)){     
+      LCD.write(CTRL1);
+      LCD.write(CLEAR);
       //Serial.print("valid -- ");
       //Serial.println(line);
       writeToLCD(line);
@@ -221,6 +220,9 @@ void readCartData(){
     }
     //reset
     len = 0;
+  }else{
+    //not connected
+    writeToLCD("DNC,NC,NC");
   }
   
 }

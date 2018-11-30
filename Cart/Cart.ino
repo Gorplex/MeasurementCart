@@ -60,8 +60,8 @@ void gaugeSetup(){
 }
 
 void EncISR(){ 
-  if(!digitalRead(KNOB_ENCA)){  //to prevent double positive counts ISR triggered on B falling if A was high (causing double count)
-    if(!digitalRead(KNOB_ENCB)){
+  if(!digitalRead(ENCA)){  //to prevent double positive counts ISR triggered on B falling if A was high (causing double count)
+    if(!digitalRead(ENCB)){
       encCount++;
     }else{
       encCount--;
@@ -123,7 +123,7 @@ void readGauge(){
 }
 
 void readEnc(){
-  CONTROLLER.print(((long)encCount)*FT_PER_ROT/MAG_PRE_ROT), 1);
+  CONTROLLER.print(((long)encCount)*FT_PER_ROT/MAG_PER_ROT, 1);
   
 }
 

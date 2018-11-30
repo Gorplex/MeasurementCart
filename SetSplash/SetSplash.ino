@@ -10,13 +10,12 @@
 #define LINE1 SETCURS
 #define LINE2 SETCURS+64
 
-//SoftwareSerial LCD(3,2); // pin 2 = TX, pin 3 = RX (unused)
 #define LCD Serial1
 
 void setup()
 {
   LCD.begin(9600);
-  //LCD.write(0x12);  //reset to 9600 baud during startup
+  LCD.write(0x12);  //reset to 9600 baud during startup
   
   delay(500); // wait for display to boot up
 
@@ -60,5 +59,8 @@ void setup()
 
 void loop()
 {
-
+  LCD.write(CTRL1);
+  LCD.write(LINE1);
+  LCD.write("Complete");
+  
 }
