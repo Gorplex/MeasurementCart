@@ -62,6 +62,7 @@ int SDStatus= SD_OK;
 
 //time
 #define TIME_DIG 5
+#define CON_TIMEOUT 5000
 
 
 void setupKnob(){
@@ -204,6 +205,7 @@ int check_line(char* line, int len){
 void readCartData(){
   static char line[MAX_LINE_LEN];
   static char len = 0;
+  static time_t nextNCTime = 0;
 
   if(0 < CART.available()){
     line[len++] = CART.read();
@@ -217,12 +219,16 @@ void readCartData(){
       //Serial.println(line);
       writeToLCD(line);
       writeToFile(line);
+      nextNCTime = millis() + CON_TIMEOUT;
     }
     //reset
     len = 0;
   }else{
     //not connected
-    writeToLCD("DNC,NC,NC");
+    if(nextNCTime < millis()){
+      writeToLCD("DNC,NC,NC");
+      nextNCTime = CON_TIMEOUT;
+    }
   }
   
 }

@@ -36,6 +36,7 @@ HX711_ADC LoadCell(LC_DAT, LC_CLK);
 #define MIN_LEN 0.0
 #define MAX_LEN 322.2625 //in mm
 #define MM_TO_THOU 39.3701
+#define THOU_TO_IN 1000
 
 
 
@@ -119,7 +120,7 @@ int readTomm(int value){
 }
 
 void readGauge(){
-  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN)), 0);
+  CONTROLLER.print(MM_TO_THOU*readTomm(analogRead(GAUGE_PIN))/THOU_TO_IN, 3);
 }
 
 void readEnc(){
