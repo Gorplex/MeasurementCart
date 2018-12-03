@@ -24,8 +24,6 @@
 #define KNOB_GRN A11
 #define KNOB_BLU A10
 
-volatile int knobCount = 0;
-
 //buttons
 #define SAFTY 24
 #define SAFTY_LED 25
@@ -52,13 +50,14 @@ volatile int knobCount = 0;
 
 //sd card
 #define SD_PIN 53
-#define SD_FILENAME "Data"
-#define SD_EXT ".csv"
+#define SD_FILENAME ((char*)"Data")
+#define SD_EXT ((char*)".csv")
 #define SD_OK 0
 #define SD_FAIL_INIT 1
 #define SD_FAIL_FILE 2
 
-int SDStatus= SD_OK;
+int SDStatus = SD_OK;
+volatile int SD_filenum = 0;
 
 //time
 #define TIME_DIG 5
@@ -81,9 +80,9 @@ void setupKnob(){
 void knobISR(){ 
   if(!digitalRead(KNOB_ENCA)){  //to prevent double positive counts ISR triggered on B falling if A was high (causing double count)
     if(!digitalRead(KNOB_ENCB)){
-      knobCount++;
+      SD_filenum++;
     }else{
-      knobCount--;
+      SD_filenum--;
     }
   }
 }
@@ -143,13 +142,16 @@ void setup()
 void writeToLCD(char* line){
   //to skip over leading D
   line++;
+  String tempStr;
 
   //File name and status
   LCD.write(CTRL1);
   LCD.write(LINE1);
   LCD.write("File: ");
   if(SDStatus == SD_OK){
-    LCD.write(SD_FILENAME SD_EXT);
+    tempStr = SD_FILENAME + SD_filenum;
+    tempStr = tempStr + SD_EXT;
+    LCD.print(tempStr);
   }else if (SDStatus == SD_FAIL_INIT){
     LCD.write("SD ERR");
   }else if(SDStatus == SD_FAIL_FILE){
@@ -226,7 +228,7 @@ void readCartData(){
   }else{
     //not connected
     if(nextNCTime < millis()){
-      writeToLCD("DNC,NC,NC");
+      writeToLCD((char*)"DNC,NC,NC");
       nextNCTime = CON_TIMEOUT;
     }
   }
@@ -235,10 +237,13 @@ void readCartData(){
 
 void writeToFile(char* line){
   File openFile;
+  String tempStr;
   
   //if SD card was inited 
   if(SDStatus != SD_FAIL_INIT){
-    if(openFile = SD.open(SD_FILENAME SD_EXT, FILE_WRITE)){
+    tempStr = SD_FILENAME + SD_filenum;
+    tempStr = tempStr + SD_EXT;
+    if(openFile = SD.open(tempStr, FILE_WRITE)){
       openFile.println(line);
       openFile.close();
     }else{
