@@ -37,8 +37,8 @@ HX711_ADC LoadCell(LC_DAT, LC_CLK);
 #define MAX_LEN 322.2625 //in mm
 #define MM_TO_THOU 39.3701
 #define THOU_TO_IN 1000
-#define MIN_PIST_LEN 0             //length of sting pot at piston min (in inches)
-#define TOTAL_GAUGE_AT_MIN_PIST 0   //length of entire gauge at piston min (in inches)
+#define MIN_PIST_LEN .787             //length of sting pot at piston min (in inches)
+#define TOTAL_GAUGE_AT_MIN_PIST 17.18825   //length of entire gauge at piston min (in inches)
 
 
 

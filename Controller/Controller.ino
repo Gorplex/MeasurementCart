@@ -194,7 +194,7 @@ void writeToLCD(char* line){
   while(*line != '\0'){
     LCD.write(*line++);
   }
-  LCD.write(" Thou");
+  LCD.write(" in");
 }
 
 int check_line(char* line, int len){
