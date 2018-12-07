@@ -243,22 +243,23 @@ void readCartData(){
       nextNCTime = CON_TIMEOUT;
     }
   }
-  
 }
 
 void writeToFile(char* line){
   File openFile;
   String tempStr;
-  
-  //if SD card was inited 
-  if(SDStatus != SD_FAIL_INIT){
-    tempStr = SD_FILENAME + SD_filenum;
-    tempStr = tempStr + SD_EXT;
-    if(openFile = SD.open(tempStr, FILE_WRITE)){
-      openFile.println(line);
-      openFile.close();
-    }else{
-      SDStatus = SD_FAIL_FILE;
+
+  if(keepData(line){
+    //if SD card was inited 
+    if(SDStatus != SD_FAIL_INIT){
+      tempStr = SD_FILENAME + SD_filenum;
+      tempStr = tempStr + SD_EXT;
+      if(openFile = SD.open(tempStr, FILE_WRITE)){
+        openFile.println(line);
+        openFile.close();
+      }else{
+        SDStatus = SD_FAIL_FILE;
+      }
     }
   }
 }
