@@ -7,7 +7,7 @@ OUT_FILE = "DataFiltered.csv"
 AVG_SAME_LOCATIONS = True;
 REMOVE_RETRACTED_POINTS = True;    # removes data points that are below RETRACTED_GAUGE_THRES or RETRACTED_FORCE_THRES
 PRINT_FILE_OUTPUT = True
-PLOT_OUTPUT = True          #not implemented need matplotlib on windows
+PLOT_OUTPUT = True          
 
 RETRACTED_GAUGE_THRES = 16          #in inches
 RETRACTED_FORCE_THRES = 10         # in lb 
@@ -70,6 +70,35 @@ def parseFile(inF, outF):
     if(AVG_SAME_LOCATIONS):
         outputLine(outF, avgVals[0], avgVals[2]/avgVals[1], avgVals[3]/avgVals[1])
 
+def plotOutput():
+    import matplotlib.pyplot as plt
+    f = open(OUT_FILE, 'r')
+    data = [[float(val) for val in line.split(",")] for line in f.readlines()[1:]]
+    
+    x = [val[0] for val in data]
+    y1 = [val[1] for val in data]
+    y2 = [val[2] for val in data]
+    
+    ax1=plt.subplot(2, 1, 1)
+    ax1.plot(x, y1)
+    ax1.set(xlabel='Track Pos (ft)', ylabel='Force (lb)',
+       title='Force vs Track Pos')
+    
+    ax2=plt.subplot(2, 1, 2)
+    ax2.plot(x, y2)
+    ax2.set(xlabel='Track Pos (ft)', ylabel='Gauge (in)',
+       title='Gauge vs Track Pos')
+    
+    plt.tight_layout()
+    plt.show()
+    f.close()
+    
+def install_matplotlib():
+    try:
+        import matplotlib
+    except ImportError:
+        import os
+        os.system("pip install matplotlib")
         
 def main():
     inF = None
@@ -91,8 +120,14 @@ def main():
     
     inF.close()
     outF.close()
-
-
+    
+    #run pip install matplotlib if ploting is not avalable
+    if(PLOT_OUTPUT):
+        install_matplotlib()
+        try:  
+            plotOutput();
+        except:
+            print("problem with matplot lib graphing")
 
 
 
