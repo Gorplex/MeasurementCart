@@ -49,6 +49,8 @@
 #define CART Serial3
 
 //sd card
+DATA_HEADER = "Track Distance(ft), Force (lb), Gauge (in)"
+
 #define SD_PIN 53
 #define SD_FILENAME ((char*)"Data")
 #define SD_EXT ((char*)".csv")
@@ -111,8 +113,17 @@ void setupBtns(){
 }
 
 void setupSD(){
+  File openFile;
+  
   if (!SD.begin(SD_PIN)) {  //defaults to pin 53
     SDStatus = SD_FAIL_INIT;
+  }else{
+    if(openFile = SD.open(tempStr, FILE_WRITE)){
+      openFile.println(DATA_HEADER);
+      openFile.close();
+    }else{
+      SDStatus = SD_FAIL_FILE;
+    }
   }
 }
 
@@ -185,7 +196,7 @@ void writeToLCD(char* line){
     LCD.write(*line++);
   }
   line++;
-  LCD.write(" kg");
+  LCD.write(" lb");
 
   //Gauge
   LCD.write(CTRL1);

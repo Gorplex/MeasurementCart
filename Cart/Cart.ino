@@ -23,6 +23,7 @@ volatile long encCount = 0;
 #define SENSOR_PERIOD 1000
 
 //load cell
+#define KG_TO_LB 2.20462
 #define LC_CLK 18
 #define LC_DAT 19
 #define SETTLE_TIME 500
@@ -113,7 +114,7 @@ void setPistons(){
 }
 
 void readLC(){
-  CONTROLLER.print(LoadCell.getData(), 4);
+  CONTROLLER.print(LoadCell.getData()*KG_TO_LB, 4);
 }
 
 //takes 10 bit analog read value and converts to mm
