@@ -17,7 +17,7 @@ void setup()
   LCD.begin(9600);
   LCD.write(0x12);  //reset to 9600 baud during startup
   
-  delay(500); // wait for display to boot up
+  delay(5000); // wait for display to boot up
 
   LCD.write(CTRL2);
   LCD.write(0x03);
@@ -35,7 +35,7 @@ void setup()
   LCD.write(LINE2);
   LCD.write("   Cal Poly 2018    ");
 
-  delay(2000);
+  delay(5000);
 
   LCD.write(CTRL2);
   LCD.write(0x0A);//set splash

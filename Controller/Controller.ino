@@ -49,7 +49,7 @@
 #define CART Serial3
 
 //sd card
-DATA_HEADER = "Track Distance(ft), Force (lb), Gauge (in)"
+#define DATA_HEADER  "Track Distance(ft), Force (lb), Gauge (in)"
 
 #define SD_PIN 53
 #define SD_FILENAME ((char*)"Data")
@@ -114,10 +114,13 @@ void setupBtns(){
 
 void setupSD(){
   File openFile;
+  String tempStr;
   
   if (!SD.begin(SD_PIN)) {  //defaults to pin 53
     SDStatus = SD_FAIL_INIT;
   }else{
+      tempStr = SD_FILENAME + String(SD_filenum);
+      tempStr = tempStr + SD_EXT;
     if(openFile = SD.open(tempStr, FILE_WRITE)){
       openFile.println(DATA_HEADER);
       openFile.close();
@@ -249,17 +252,15 @@ void writeToFile(char* line){
   File openFile;
   String tempStr;
 
-  if(keepData(line){
-    //if SD card was inited 
-    if(SDStatus != SD_FAIL_INIT){
-      tempStr = SD_FILENAME + SD_filenum;
-      tempStr = tempStr + SD_EXT;
-      if(openFile = SD.open(tempStr, FILE_WRITE)){
-        openFile.println(line);
-        openFile.close();
-      }else{
-        SDStatus = SD_FAIL_FILE;
-      }
+  //if SD card was inited 
+  if(SDStatus != SD_FAIL_INIT){
+    tempStr = SD_FILENAME + String(SD_filenum);
+    tempStr = tempStr + SD_EXT;
+    if(openFile = SD.open(tempStr, FILE_WRITE)){
+      openFile.println(line);
+      openFile.close();
+    }else{
+      SDStatus = SD_FAIL_FILE;
     }
   }
 }
